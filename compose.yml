@@ -2,24 +2,7 @@ name: ollama
 version: "3.8"
 
 services:
-  stable-diffusion:
-    build:
-      context: stable-diffusion
-      dockerfile: Dockerfile
-    container_name: stable-diffusion
-    volumes:
-      - stable-diffusion:/root/.stable-diffusion
-    ports:
-      - 7860:7860
-    restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-
+  
   ollama:
     build:
       context: ollama
