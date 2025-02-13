@@ -21,6 +21,23 @@ services:
               count: 1
               capabilities: [gpu]
 
+  gpustack:
+    image: gpustack/gpustack
+    # uncomment and update the following line for starting GPUStack worker
+    # command: --server-url http://myserver --token mytoken
+    ports:
+      - "9080:80"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+    restart: always
+    volumes:
+    - gpustack-data:/var/lib/gpustack
+            
+
   open-webui:
     build:
       context: open-webui
@@ -42,3 +59,4 @@ volumes:
   stable-diffusion: {}
   ollama: {}
   open-webui: {}
+  gpustack-data: {}

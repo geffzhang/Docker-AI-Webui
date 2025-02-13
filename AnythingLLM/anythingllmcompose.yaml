@@ -1,0 +1,60 @@
+
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    networks:
+      - anythingllm-net 
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama/models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - anythingllm-net
+
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./anythingllm_data:/app/server/storage
+    environment:
+      # 数据库配置
+      - SERVER_PORT=3000
+      - VECTOR_DB=qdrant
+      - QDRANT_URL=http://qdrant:6333
+      - QDRANT_API_KEY=  # 未启用认证时留空
+      # 嵌入模型配置
+      - EMBEDDING_ENGINE=ollama
+      - EMBEDDING_MODEL_PREF=bge-m3:567m
+      - EMBEDDING_MODEL_MAX_CHUNK_LENGTH=8192
+      - EMBEDDING_BASE_PATH=http://ollama:11434
+      # LLM配置
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_PATH=http://ollama:11434
+      - OLLAMA_MODEL_PREF=deepseek-r1:8b
+      - OLLAMA_MODEL_TOKEN_LIMIT=4096
+
+    networks:
+      - anythingllm-net
+    depends_on:
+      - qdrant
+      - ollama
+
+networks:
+  anythingllm-net:
+    driver: bridge
